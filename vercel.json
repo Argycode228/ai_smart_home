@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/image.js": {
+      "maxDuration": 60
+    },
+    "api/audio.js": {
+      "maxDuration": 30
+    },
+    "api/video.js": {
+      "maxDuration": 30
+    },
+    "api/video-content.js": {
+      "maxDuration": 60
+    }
+  }
+}
