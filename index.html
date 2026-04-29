@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Smart Home AI Assistant: AI + IoT demo with Vercel Functions." />
+  <title>Smart Home AI Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="hero" id="top">
+    <nav class="nav">
+      <a href="#top" class="brand">Smart Home AI</a>
+      <div class="links">
+        <a href="#image">Image</a>
+        <a href="#weather">Agent</a>
+        <a href="#sensors">Sensors</a>
+        <a href="#media">Media</a>
+        <a href="#chat">Chat</a>
+      </div>
+    </nav>
+
+    <section class="hero-grid">
+      <div>
+        <span class="tag">AI + IoT + Vercel</span>
+        <h1>Умный дом с AI-функциями, готовый к деплою</h1>
+        <p class="lead">Демо показывает генерацию изображений, AI-чат, погодного агента, таблицу датчиков, озвучку и видео через Vercel Functions.</p>
+        <div class="actions">
+          <a class="btn light" href="#image">Открыть демо</a>
+          <a class="btn ghost" href="#deploy">Как запустить</a>
+        </div>
+      </div>
+      <div class="console">
+        <div class="console-top"><strong>AI Smart Console</strong><span>ONLINE</span></div>
+        <div class="tiles">
+          <div><small>Температура</small><strong>22°C</strong><span>Комфорт</span></div>
+          <div><small>Безопасность</small><strong>Норма</strong><span>Камеры активны</span></div>
+          <div><small>Свет</small><strong>68%</strong><span>Автояркость</span></div>
+          <div><small>Энергия</small><strong>2.4 kWh</strong><span>Сегодня</span></div>
+        </div>
+      </div>
+    </section>
+  </header>
+
+  <main>
+    <section class="section" id="image">
+      <div class="heading">
+        <span class="tag dark">AI image</span>
+        <h2>Генератор изображения</h2>
+        <p>Фронт отправляет промпт в Vercel Function `/api/image`, а ключ OpenAI хранится только в настройках Vercel.</p>
+      </div>
+      <div class="grid two">
+        <div class="card">
+          <label for="imagePrompt">Промпт</label>
+          <textarea id="imagePrompt" rows="4">Futuristic smart home interior, IoT sensors, holographic control panel, cinematic lighting</textarea>
+          <div class="chips">
+            <button data-prompt="Modern smart home living room with AI assistant, cozy light">Гостиная</button>
+            <button data-prompt="Smart kitchen with connected appliances and futuristic displays">Кухня</button>
+            <button data-prompt="AI security room with cameras, sensors and smart locks">Безопасность</button>
+          </div>
+          <button class="btn primary" id="generateImageBtn">Сгенерировать</button>
+          <p class="status" id="imageStatus">Готово к генерации.</p>
+        </div>
+        <div class="card preview-card">
+          <div class="row"><h3>Результат</h3><span id="imageBadge">OpenAI</span></div>
+          <div class="image-box">
+            <img id="generatedImage" alt="AI generated smart home" />
+            <span id="promptEcho">Сгенерируйте изображение</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section muted" id="weather">
+      <div class="heading">
+        <span class="tag dark">AI agent</span>
+        <h2>Погодный агент</h2>
+        <p>Open-Meteo даёт факты, а JavaScript превращает их в понятный режим умного дома.</p>
+      </div>
+      <div class="card">
+        <div class="form-row">
+          <input id="cityInput" value="Almaty" placeholder="Город" />
+          <select id="cityPreset">
+            <option value="Almaty">Almaty</option>
+            <option value="Astana">Astana</option>
+            <option value="Shymkent">Shymkent</option>
+            <option value="Bishkek">Bishkek</option>
+          </select>
+          <button class="btn success" id="loadWeatherBtn">Получить совет</button>
+        </div>
+        <p class="status" id="weatherStatus">Введите город и нажмите кнопку.</p>
+      </div>
+      <div class="grid two mt">
+        <div class="card weather-card">
+          <div class="row"><div><h3 id="weatherCity">—</h3><p id="weatherMeta">Данные ещё не загружены</p></div><strong id="weatherTemp">--°C</strong></div>
+          <div class="metrics">
+            <div><span>Состояние</span><strong id="weatherCondition">—</strong></div>
+            <div><span>Ветер</span><strong id="weatherWind">—</strong></div>
+            <div><span>Осадки</span><strong id="weatherRain">—</strong></div>
+          </div>
+          <div class="forecast" id="forecastGrid"></div>
+        </div>
+        <div class="card recommend">
+          <span class="tag dark">Smart mode</span>
+          <h3 id="homeMode">Ожидание</h3>
+          <p id="homeAdvice">После загрузки погоды здесь появится рекомендация.</p>
+          <div class="mode-list">
+            <div><span>Отопление</span><strong id="heatingAdvice">—</strong></div>
+            <div><span>Вентиляция</span><strong id="ventAdvice">—</strong></div>
+            <div><span>Безопасность</span><strong id="securityAdvice">—</strong></div>
+            <div><span>Энергия</span><strong id="energyAdvice">—</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="sensors">
+      <div class="heading"><span class="tag dark">Sensors</span><h2>Динамическая таблица датчиков</h2></div>
+      <div class="card">
+        <div class="actions small">
+          <button class="btn secondary" id="addRowBtn">Добавить событие</button>
+          <button class="btn secondary" id="addBatchBtn">Добавить 5</button>
+          <button class="btn danger" id="clearTableBtn">Очистить</button>
+        </div>
+        <div class="table-wrap">
+          <table id="sensorTable"><thead><tr><th>#</th><th>Время</th><th>Устройство</th><th>Показатель</th><th>Статус</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <section class="section muted" id="media">
+      <div class="heading"><span class="tag dark">Media</span><h2>AI-аудио, видео и аватар</h2></div>
+      <div class="grid two">
+        <div class="card avatar-card">
+          <div class="avatar"><div class="head"><i></i><i></i><b id="avatarMouth"></b></div><div class="body"></div></div>
+          <h3>Aida — AI-консультант</h3>
+          <button class="btn primary" data-speak="Привет. Я Aida, цифровой помощник умного дома.">Сказать привет</button>
+          <button class="btn secondary" data-speak="IoT — это сеть устройств, которые подключены к интернету и обмениваются данными.">Объяснить IoT</button>
+        </div>
+        <div class="card">
+          <label for="audioPrompt">Текст для аудио</label>
+          <textarea id="audioPrompt" rows="3">Welcome to the smart home demo. Sensors and AI assistant are online.</textarea>
+          <button class="btn success" id="generateAudioBtn">Сгенерировать аудио</button>
+          <p class="status" id="audioStatus">Аудио ещё не загружено.</p>
+          <audio id="aiAudio" controls></audio>
+          <label for="videoPrompt" class="mt-label">Промпт для видео</label>
+          <textarea id="videoPrompt" rows="3">Friendly virtual home assistant avatar explaining smart sensors, futuristic studio.</textarea>
+          <button class="btn dark-btn" id="generateVideoBtn">Сгенерировать видео</button>
+          <p class="status" id="videoStatus">Видео будет загружено ниже.</p>
+          <div class="video-box"><video id="aiVideo" controls playsinline></video><span id="videoPlaceholder">Если Video API недоступен, остаётся рабочий аватар.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="chat">
+      <div class="heading"><span class="tag dark">Chat</span><h2>AI-чат по умному дому</h2></div>
+      <div class="grid two chat-grid">
+        <div class="card chat-card">
+          <div id="chatBox" class="chat-box"></div>
+          <div class="chips questions">
+            <button class="quick-question">Что такое IoT?</button>
+            <button class="quick-question">Что делает AI-агент?</button>
+            <button class="quick-question">Как работает датчик движения?</button>
+          </div>
+          <div class="input-line"><input id="chatInput" placeholder="Напишите вопрос..." /><button class="btn primary" id="sendChatBtn">Отправить</button></div>
+          <p class="status" id="chatStatus">Бот готов к работе.</p>
+        </div>
+        <div class="card" id="deploy">
+          <h3>Для Vercel</h3>
+          <ol>
+            <li>Framework Preset: Other</li>
+            <li>Build Command: пусто</li>
+            <li>Output Directory: .</li>
+            <li>Environment Variable: OPENAI_API_KEY</li>
+          </ol>
+          <p>AI-функции лежат в папке <code>api</code>, поэтому ключ OpenAI не попадает в браузер.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>Smart Home AI Assistant · Deploy-ready for Vercel</footer>
+  <script src="script.js"></script>
+</body>
+</html>
