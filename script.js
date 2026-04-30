@@ -22,12 +22,16 @@ const chatBox = document.getElementById('chatBox');
 const chatStatus = document.getElementById('chatStatus');
 
 function encodePrompt(text) {
-  return encodeURIComponent(text.trim().replace(/\s+/g, ' '));
+  return encodeURIComponent(String(text || '').trim().replace(/\s+/g, ' '));
 }
 
 function setStatus(id, text) {
   const el = document.getElementById(id);
   if (el) el.textContent = text;
+}
+
+function shortError(error) {
+  return error?.message ? error.message.replace(/\s+/g, ' ').slice(0, 130) : 'неизвестная ошибка';
 }
 
 async function postJson(path, payload) {
@@ -65,31 +69,20 @@ function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function shortError(error) {
-  return error?.message ? error.message.replace(/\s+/g, ' ').slice(0, 130) : 'неизвестная ошибка';
-}
-
 async function generateImage() {
   const prompt = document.getElementById('imagePrompt').value.trim();
   if (!prompt) return;
-  const image = document.getElementById('generatedImage');
-  setStatus('imageStatus', 'Генерирую изображение через Vercel API...');
-  document.getElementById('promptEcho').textContent = prompt;
 
-  try {
-    const data = await postJson('/api/image', { prompt });
-    document.getElementById('imageBadge').textContent = data.model || 'OpenAI Image';
-    image.onload = () => setStatus('imageStatus', 'Изображение загружено.');
-    image.onerror = () => setStatus('imageStatus', 'Изображение получено, но браузер не смог его показать.');
-    image.src = data.image;
-  } catch (error) {
-    console.error(error);
-    setStatus('imageStatus', `OpenAI API недоступен: ${shortError(error)}. Пробую fallback...`);
-    document.getElementById('imageBadge').textContent = 'Fallback';
-    image.onload = () => setStatus('imageStatus', 'Изображение загружено через fallback.');
-    image.onerror = () => setStatus('imageStatus', 'Проверьте OPENAI_API_KEY в Vercel.');
-    image.src = `https://gen.pollinations.ai/image/${encodePrompt(prompt)}?width=1280&height=720&nologo=true&safe=true&seed=${Date.now()}`;
-  }
+  const image = document.getElementById('generatedImage');
+  const imageBadge = document.getElementById('imageBadge');
+  const url = `https://gen.pollinations.ai/image/${encodePrompt(prompt)}?width=1280&height=720&nologo=true&safe=true&seed=${Date.now()}`;
+
+  setStatus('imageStatus', 'Генерирую изображение через Pollinations...');
+  document.getElementById('promptEcho').textContent = prompt;
+  if (imageBadge) imageBadge.textContent = 'Pollinations';
+  image.onload = () => setStatus('imageStatus', 'Изображение загружено через Pollinations.');
+  image.onerror = () => setStatus('imageStatus', 'Pollinations временно недоступен. Попробуйте ещё раз или измените промпт.');
+  image.src = url;
 }
 
 async function getCoordinates(city) {
