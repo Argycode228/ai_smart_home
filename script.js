@@ -21,12 +21,20 @@ const sensorEvents = [
 const chatBox = document.getElementById('chatBox');
 const chatStatus = document.getElementById('chatStatus');
 
+function $(id) {
+  return document.getElementById(id);
+}
+
 function encodePrompt(text) {
   return encodeURIComponent(String(text || '').trim().replace(/\s+/g, ' '));
 }
 
+function slugPrompt(text) {
+  return String(text || '').trim().replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_\-]/g, '').slice(0, 220);
+}
+
 function setStatus(id, text) {
-  const el = document.getElementById(id);
+  const el = $(id);
   if (el) el.textContent = text;
 }
 
@@ -69,20 +77,36 @@ function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function tryImageUrls(image, urls, index = 0) {
+  if (index >= urls.length) {
+    setStatus('imageStatus', 'Pollinations сейчас не отдал картинку. Нажмите кнопку ещё раз через минуту.');
+    return;
+  }
+
+  image.onload = () => setStatus('imageStatus', 'Изображение загружено через Pollinations.');
+  image.onerror = () => tryImageUrls(image, urls, index + 1);
+  image.src = urls[index];
+}
+
 async function generateImage() {
-  const prompt = document.getElementById('imagePrompt').value.trim();
+  const prompt = $('imagePrompt').value.trim();
   if (!prompt) return;
 
-  const image = document.getElementById('generatedImage');
-  const imageBadge = document.getElementById('imageBadge');
-  const url = `https://gen.pollinations.ai/image/${encodePrompt(prompt)}?width=1280&height=720&nologo=true&safe=true&seed=${Date.now()}`;
+  const image = $('generatedImage');
+  const encoded = encodePrompt(prompt);
+  const seed = Date.now();
+  const urls = [
+    `https://image.pollinations.ai/prompt/${encoded}?width=1280&height=720&model=flux&nologo=true&safe=true&seed=${seed}`,
+    `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=768&model=turbo&nologo=true&safe=true&seed=${seed}`,
+    `https://gen.pollinations.ai/image/${encoded}?width=1280&height=720&nologo=true&safe=true&seed=${seed}`,
+    `https://pollinations.ai/p/${slugPrompt(prompt) || 'smart_home_ai'}`,
+  ];
 
   setStatus('imageStatus', 'Генерирую изображение через Pollinations...');
-  document.getElementById('promptEcho').textContent = prompt;
-  if (imageBadge) imageBadge.textContent = 'Pollinations';
-  image.onload = () => setStatus('imageStatus', 'Изображение загружено через Pollinations.');
-  image.onerror = () => setStatus('imageStatus', 'Pollinations временно недоступен. Попробуйте ещё раз или измените промпт.');
-  image.src = url;
+  $('promptEcho').textContent = prompt;
+  const badge = $('imageBadge');
+  if (badge) badge.textContent = 'Pollinations';
+  tryImageUrls(image, urls);
 }
 
 async function getCoordinates(city) {
@@ -94,8 +118,8 @@ async function getCoordinates(city) {
 }
 
 async function loadWeather() {
-  const manualCity = document.getElementById('cityInput').value.trim();
-  const city = manualCity || document.getElementById('cityPreset').value;
+  const manualCity = $('cityInput').value.trim();
+  const city = manualCity || $('cityPreset').value;
   if (!city) return;
   setStatus('weatherStatus', 'Ищу город и загружаю погоду...');
 
@@ -117,22 +141,22 @@ function renderWeather(geo, data) {
   const temperature = Math.round(current.temperature_2m);
   const code = current.weather_code;
   const wind = Math.round(current.wind_speed_10m);
-  document.getElementById('weatherCity').textContent = `${geo.name}, ${geo.country || ''}`.replace(/,\s*$/, '');
-  document.getElementById('weatherMeta').textContent = `${geo.admin1 || '—'} · Часовой пояс: ${geo.timezone || 'local'}`;
-  document.getElementById('weatherTemp').textContent = `${temperature}°C`;
-  document.getElementById('weatherCondition').textContent = weatherCodes[code] || 'Неизвестно';
-  document.getElementById('weatherWind').textContent = `${wind} км/ч`;
-  document.getElementById('weatherRain').textContent = `${Number(current.precipitation || 0).toFixed(1)} мм`;
+  $('weatherCity').textContent = `${geo.name}, ${geo.country || ''}`.replace(/,\s*$/, '');
+  $('weatherMeta').textContent = `${geo.admin1 || '—'} · Часовой пояс: ${geo.timezone || 'local'}`;
+  $('weatherTemp').textContent = `${temperature}°C`;
+  $('weatherCondition').textContent = weatherCodes[code] || 'Неизвестно';
+  $('weatherWind').textContent = `${wind} км/ч`;
+  $('weatherRain').textContent = `${Number(current.precipitation || 0).toFixed(1)} мм`;
 
   const advice = getHomeAdvice(temperature, code, wind);
-  document.getElementById('homeMode').textContent = advice.mode;
-  document.getElementById('homeAdvice').textContent = advice.summary;
-  document.getElementById('heatingAdvice').textContent = advice.heating;
-  document.getElementById('ventAdvice').textContent = advice.ventilation;
-  document.getElementById('securityAdvice').textContent = advice.security;
-  document.getElementById('energyAdvice').textContent = advice.energy;
+  $('homeMode').textContent = advice.mode;
+  $('homeAdvice').textContent = advice.summary;
+  $('heatingAdvice').textContent = advice.heating;
+  $('ventAdvice').textContent = advice.ventilation;
+  $('securityAdvice').textContent = advice.security;
+  $('energyAdvice').textContent = advice.energy;
 
-  const grid = document.getElementById('forecastGrid');
+  const grid = $('forecastGrid');
   grid.innerHTML = '';
   data.hourly.time.slice(0, 6).forEach((time, index) => {
     const card = document.createElement('div');
@@ -180,7 +204,7 @@ function clearTable() {
 }
 
 function setTalking(active) {
-  document.getElementById('avatarMouth').classList.toggle('talking', active);
+  $('avatarMouth').classList.toggle('talking', active);
 }
 
 function speakText(text) {
@@ -212,10 +236,10 @@ async function pollVideo(videoId) {
 }
 
 async function generateVideo() {
-  const prompt = document.getElementById('videoPrompt').value.trim();
+  const prompt = $('videoPrompt').value.trim();
   if (!prompt) return;
-  const video = document.getElementById('aiVideo');
-  const placeholder = document.getElementById('videoPlaceholder');
+  const video = $('aiVideo');
+  const placeholder = $('videoPlaceholder');
   setStatus('videoStatus', 'Запускаю генерацию Sora-видео через Vercel API...');
   video.removeAttribute('src');
   video.load();
@@ -238,9 +262,9 @@ async function generateVideo() {
 }
 
 async function generateAudio() {
-  const prompt = document.getElementById('audioPrompt').value.trim();
+  const prompt = $('audioPrompt').value.trim();
   if (!prompt) return;
-  const audio = document.getElementById('aiAudio');
+  const audio = $('aiAudio');
   setStatus('audioStatus', 'Генерирую AI-аудио через Vercel API...');
   try {
     const blob = await postBlob('/api/audio', { prompt });
@@ -276,7 +300,7 @@ function fallbackAnswer(input) {
 }
 
 async function askBot() {
-  const input = document.getElementById('chatInput');
+  const input = $('chatInput');
   const question = input.value.trim();
   if (!question) return;
   addMessage('user', question);
@@ -296,7 +320,7 @@ async function askBot() {
 function initQuickButtons() {
   document.querySelectorAll('[data-prompt]').forEach((button) => {
     button.addEventListener('click', () => {
-      document.getElementById('imagePrompt').value = button.dataset.prompt;
+      $('imagePrompt').value = button.dataset.prompt;
       generateImage();
     });
   });
@@ -305,23 +329,23 @@ function initQuickButtons() {
   });
   document.querySelectorAll('.quick-question').forEach((button) => {
     button.addEventListener('click', () => {
-      document.getElementById('chatInput').value = button.textContent.trim();
+      $('chatInput').value = button.textContent.trim();
       askBot();
     });
   });
 }
 
 function initEvents() {
-  document.getElementById('generateImageBtn').addEventListener('click', generateImage);
-  document.getElementById('loadWeatherBtn').addEventListener('click', loadWeather);
-  document.getElementById('cityPreset').addEventListener('change', (event) => { document.getElementById('cityInput').value = event.target.value; });
-  document.getElementById('addRowBtn').addEventListener('click', addRow);
-  document.getElementById('addBatchBtn').addEventListener('click', () => addBatch(5));
-  document.getElementById('clearTableBtn').addEventListener('click', clearTable);
-  document.getElementById('generateVideoBtn').addEventListener('click', generateVideo);
-  document.getElementById('generateAudioBtn').addEventListener('click', generateAudio);
-  document.getElementById('sendChatBtn').addEventListener('click', askBot);
-  document.getElementById('chatInput').addEventListener('keydown', (event) => { if (event.key === 'Enter') askBot(); });
+  $('generateImageBtn').addEventListener('click', generateImage);
+  $('loadWeatherBtn').addEventListener('click', loadWeather);
+  $('cityPreset').addEventListener('change', (event) => { $('cityInput').value = event.target.value; });
+  $('addRowBtn').addEventListener('click', addRow);
+  $('addBatchBtn').addEventListener('click', () => addBatch(5));
+  $('clearTableBtn').addEventListener('click', clearTable);
+  $('generateVideoBtn').addEventListener('click', generateVideo);
+  $('generateAudioBtn').addEventListener('click', generateAudio);
+  $('sendChatBtn').addEventListener('click', askBot);
+  $('chatInput').addEventListener('keydown', (event) => { if (event.key === 'Enter') askBot(); });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
