@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="CRM Operations Platform portfolio project with SLA analytics, request workflow, mock API and tests." />
+    <title>CRM Operations Platform</title>
+    <link rel="stylesheet" href="src/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#overview"><span class="brand-mark">CO</span><span><strong>CRM Ops</strong><small>Operations Platform</small></span></a>
+        <nav class="side-nav">
+          <a href="#overview" class="active">Обзор</a>
+          <a href="#requests">Заявки</a>
+          <a href="#analytics">Аналитика</a>
+          <a href="#delivery">Процессы</a>
+          <a href="#architecture">Архитектура</a>
+        </nav>
+        <div class="sidebar-footer"><span class="system-label">API status</span><strong id="apiStatus">Static demo</strong></div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div>
+            <p class="section-kicker">CRM / ERP / SLA</p>
+            <h1>Operations Control Center</h1>
+            <p class="topbar-copy">Панель для обработки заявок, контроля SLA, ролей, уведомлений и управленческой отчетности.</p>
+          </div>
+          <div class="topbar-actions">
+            <button class="icon-button" id="exportCsvBtn" type="button">CSV</button>
+            <button class="primary-button" id="weeklyReportBtn" type="button">Отчет</button>
+          </div>
+        </header>
+
+        <section class="metric-grid" id="overview">
+          <article class="metric-card"><span>Активные заявки</span><strong id="activeRequests">0</strong><small id="activeRequestsMeta">0 всего</small></article>
+          <article class="metric-card"><span>SLA риск</span><strong id="slaRisk">0</strong><small id="slaRiskMeta">0 просрочено</small></article>
+          <article class="metric-card"><span>Pipeline</span><strong id="pipelineValue">0 ₸</strong><small>активные заявки</small></article>
+          <article class="metric-card"><span>Среднее закрытие</span><strong id="avgResolution">0 ч</strong><small>по закрытым задачам</small></article>
+        </section>
+
+        <section class="workspace-grid" id="requests">
+          <div class="panel board-panel">
+            <div class="panel-heading"><div><p class="section-kicker">Request board</p><h2>Очередь клиентских и внутренних заявок</h2></div><span class="count-badge" id="visibleCount">0 записей</span></div>
+            <div class="filters">
+              <label><span>Поиск</span><input id="searchInput" type="search" placeholder="Клиент, модуль, тег" /></label>
+              <label><span>Статус</span><select id="statusFilter"><option value="all">Все</option><option value="backlog">Backlog</option><option value="in_progress">In progress</option><option value="review">Review</option><option value="blocked">Blocked</option><option value="closed">Closed</option></select></label>
+              <label><span>Владелец</span><select id="ownerFilter"><option value="all">Все</option></select></label>
+            </div>
+            <div class="table-wrap"><table><thead><tr><th>ID</th><th>Клиент</th><th>Модуль</th><th>Приоритет</th><th>Статус</th><th>SLA</th><th>Сумма</th></tr></thead><tbody id="requestRows"></tbody></table></div>
+          </div>
+
+          <aside class="panel detail-panel">
+            <div class="panel-heading"><div><p class="section-kicker">Selected request</p><h2 id="detailTitle">Заявка</h2></div><span class="status-chip" id="detailSla">SLA</span></div>
+            <dl class="detail-list">
+              <div><dt>Клиент</dt><dd id="detailCustomer">-</dd></div>
+              <div><dt>Ответственный</dt><dd id="detailOwner">-</dd></div>
+              <div><dt>Роли</dt><dd id="detailRoles">-</dd></div>
+              <div><dt>Описание</dt><dd id="detailDescription">-</dd></div>
+            </dl>
+            <div class="button-row"><button class="icon-button" id="markReviewBtn" type="button">Review</button><button class="icon-button" id="notifyBtn" type="button">Notify</button></div>
+          </aside>
+        </section>
+
+        <section class="insight-grid" id="analytics">
+          <div class="panel"><div class="panel-heading"><div><p class="section-kicker">Status analytics</p><h2>Распределение по статусам</h2></div></div><div class="status-chart" id="statusChart"></div></div>
+          <div class="panel"><div class="panel-heading"><div><p class="section-kicker">Workload</p><h2>Нагрузка команды</h2></div></div><div class="workload-list" id="workloadList"></div></div>
+          <div class="panel"><div class="panel-heading"><div><p class="section-kicker">Integrations</p><h2>Внешние сервисы</h2></div></div><div class="integration-list"><div><span>Email/SMS Gateway</span><strong>99.9%</strong></div><div><span>Payment API</span><strong>98.7%</strong></div><div><span>Analytics Sink</span><strong>99.2%</strong></div><div><span>Audit Logger</span><strong>100%</strong></div></div></div>
+        </section>
+
+        <section class="process-grid" id="delivery">
+          <form class="panel request-form" id="requestForm">
+            <div class="panel-heading"><div><p class="section-kicker">Create request</p><h2>Новая заявка</h2></div></div>
+            <label><span>Клиент</span><input name="customer" required placeholder="Например: Altyn Logistics" /></label>
+            <label><span>Модуль</span><select name="module"><option>CRM</option><option>ERP</option><option>Billing</option><option>Analytics</option><option>Notifications</option></select></label>
+            <div class="form-row"><label><span>Приоритет</span><select name="priority"><option value="medium">Medium</option><option value="high">High</option><option value="critical">Critical</option><option value="low">Low</option></select></label><label><span>Сумма, ₸</span><input name="value" type="number" min="0" step="1000" value="450000" /></label></div>
+            <label><span>Описание</span><textarea name="description" rows="4" required placeholder="Что нужно сделать"></textarea></label>
+            <button class="primary-button" type="submit">Добавить</button>
+          </form>
+          <div class="panel"><div class="panel-heading"><div><p class="section-kicker">Notification preview</p><h2>Payload уведомления</h2></div></div><pre id="notificationPreview">Выберите заявку и нажмите Notify.</pre></div>
+          <div class="panel"><div class="panel-heading"><div><p class="section-kicker">Audit trail</p><h2>Журнал действий</h2></div></div><ol class="audit-list" id="auditList"></ol></div>
+        </section>
+
+        <section class="architecture-grid" id="architecture">
+          <div class="architecture-copy"><p class="section-kicker">Engineering case</p><h2>Что здесь оценивает техлид</h2><p>Проект показывает разделение UI и бизнес-логики, работу с состоянием, SLA-правила, mock API, тесты и документацию.</p></div>
+          <div class="architecture-columns"><article><strong>Frontend</strong><span>Responsive dashboard, фильтры, таблица, аналитика, CSV export.</span></article><article><strong>Domain</strong><span>Чистые функции для KPI, SLA, ролей, audit events и уведомлений.</span></article><article><strong>Backend</strong><span>Node.js mock API с endpoint-ами для health, requests, KPI и notifications.</span></article><article><strong>Quality</strong><span>Node test runner, GitHub Actions, docs и GitHub Pages deploy.</span></article></div>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "crm-ops-platform",
+  "version": "1.0.0",
+  "description": "Production-like CRM/ERP operations dashboard portfolio project.",
+  "type": "module",
+  "scripts": {
+    "start": "node server/mock-api.js",
+    "test": "node --test tests/domain.test.js"
+  },
+  "keywords": [
+    "crm",
+    "erp",
+    "dashboard",
+    "javascript",
+    "portfolio",
+    "full-stack"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
